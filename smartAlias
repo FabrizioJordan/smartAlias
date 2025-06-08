@@ -9,3 +9,54 @@ WHITE='\033[0;37m'
 NC='\033[0m' # no color
 
 
+
+
+showBashHistory(){
+	grep -o -i '\<git\>' ~/.bash_history | wc -l
+}
+
+showZshHistory(){
+	sed 's/^: [0-9]*:[0-9]*;//' ~/.zsh_history | grep -o -i '\<git\>' | wc -l
+}
+
+
+showAutomatic(){
+
+	current_shell=$(ps -p $$ -o comm=)
+
+	if [[ "$current_shell" == "/bin/zsh" ]];
+	then
+		showZshHistory
+	elif [[ "$current_shell" == "/bin/bash" ]]
+		showBashHistory
+	else
+		echo -e "Unknown shell. Try using the manual mode "
+	fi
+}
+
+
+
+echo -e "$USER ¿From where the script gonna get the history of your commands?"
+
+echo -e "
+1. Automatic
+2. From ~/.bash_history
+3. From ~/.zsh_history (only for zsh users)
+"
+
+read -rp "Enter option (number): " fromWhere
+
+case $fromWhere in
+	1)
+	 showAutomatic
+	 exit 0
+	;;
+	2)
+	 showBashHistory
+	 exit 0
+	;;
+	3)
+	 showZshHistory
+	 exit 0
+	;;
+esac
