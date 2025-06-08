@@ -9,6 +9,7 @@ WHITE='\033[0;37m'
 NC='\033[0m' # no color
 
 
+current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
 
 showBashHistory(){
@@ -22,16 +23,20 @@ showZshHistory(){
 
 showAutomatic(){
 
-	current_shell=$(ps -p $$ -o comm=)
+	current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
-	if [[ "$current_shell" == "/bin/zsh" ]];
+	if [[ "$current_shell" == "zsh" ]];
 	then
+		echo -e "Using $current_shell history file..."
 		showZshHistory
-	elif [[ "$current_shell" == "/bin/bash" ]]
+	elif [[ "$current_shell" == "bash" ]]; 
+	then
+		echo -e "Using $current_shell history file..."
 		showBashHistory
 	else
 		echo -e "Unknown shell. Try using the manual mode "
 	fi
+
 }
 
 
@@ -44,7 +49,9 @@ echo -e "
 3. From ~/.zsh_history (only for zsh users)
 "
 
-read -rp "Enter option (number): " fromWhere
+echo -n "Enter option (number): "
+read fromWhere
+
 
 case $fromWhere in
 	1)
