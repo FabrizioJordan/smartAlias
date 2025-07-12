@@ -12,13 +12,47 @@ NC='\033[0m' # no color
 current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
 
+
+# Get the history for new possible alias
+
+
+
 showBashHistory(){
-	grep -o -i '\<git\>' ~/.bash_history | wc -l
+	declare -A counter
+
+
+	# Extrae los últimos 100 comandos y guarda solo la primera palabra (el comando real)
+	commands=$(tail -n 100 ~/.bash_history | awk '{print $1}')
+
+
+	# Contador de comandos
+	for command in $commands; do
+	    ((counter[$command]++))
+	done
+
+
+	# Mostrar resultados ordenados por cantidad
+	echo -e "\n🔁 Most used commands in last 100 entries:\n"
+
+	for command in "${!counter[@]}"; do
+		number=${counter[$command]}
+
+		if [[ number -gt 5 ]]
+		then
+	    		echo "$command: $number" >> most_words.txt
+	    	fi
+	done
+
+	sort -h -t' ' -k2 most_words.txt | tail -n10
+	echo " " > most_words.txt
+	rm -f most_words.txt
 }
+
 
 showZshHistory(){
 	sed 's/^: [0-9]*:[0-9]*;//' ~/.zsh_history | grep -o -i '\<git\>' | wc -l
 }
+
 
 
 showAutomatic(){
@@ -40,30 +74,40 @@ showAutomatic(){
 }
 
 
+# Get option history
 
-echo -e "$USER ¿From where the script gonna get the history of your commands?"
+echo -e "Hi $USER! ¿From where the script gonna get the history of your commands?"
+
 
 echo -e "
 1. Automatic
 2. From ~/.bash_history
 3. From ~/.zsh_history (only for zsh users)
+
+'q' or 'Q' to Quit
 "
 
-echo -n "Enter option (number): "
-read fromWhere
+echo -n "Enter option : "
+read option
 
 
-case $fromWhere in
+case $option in
 	1)
 	 showAutomatic
-	 exit 0
 	;;
 	2)
 	 showBashHistory
-	 exit 0
 	;;
 	3)
 	 showZshHistory
+	;;
+	"q" | "Q")
+	 echo -e "Exiting..."
+	 exit 0
+	;;
+	*)
+	 echo -e "Error, option not recognized"
 	 exit 0
 	;;
 esac
+
