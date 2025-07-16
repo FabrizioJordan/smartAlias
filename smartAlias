@@ -8,31 +8,23 @@ CYAN='\033[0;36m'
 WHITE='\033[0;37m'
 NC='\033[0m' # no color
 
-
 current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
-
-
 # Get the history for new possible alias
-
-
 
 showBashHistory(){
 	declare -A counter
 
+	# Extract last 2000 commands and save only the first word (the principal command)
+	commands=$(tail -n 2000 ~/.bash_history | awk '{print $1}')
 
-	# Extrae los últimos 100 comandos y guarda solo la primera palabra (el comando real)
-	commands=$(tail -n 100 ~/.bash_history | awk '{print $1}')
-
-
-	# Contador de comandos
+	# Command counter
 	for command in $commands; do
 	    ((counter[$command]++))
 	done
 
-
-	# Mostrar resultados ordenados por cantidad
-	echo -e "\n🔁 Most used commands in last 100 entries:\n"
+	# Sort and show commands by quantity
+	echo -e "\n🔁 Most frequent commands (last 2000 Bash history entries):\n"
 
 	for command in "${!counter[@]}"; do
 		number=${counter[$command]}
@@ -43,20 +35,39 @@ showBashHistory(){
 	    	fi
 	done
 
-	sort -h -t' ' -k2 most_words.txt | tail -n10
-	echo " " > most_words.txt
+	sort -h -t' ' -k2 most_words.txt | tail -n50
 	rm -f most_words.txt
 }
 
 
 showZshHistory(){
-	sed 's/^: [0-9]*:[0-9]*;//' ~/.zsh_history | grep -o -i '\<git\>' | wc -l
+	declare -A counter
+
+	# Extact last used commands from ~/.zsh_history and save only the first word
+	commands=$(sed 's/^: [0-9]*:[0-9]*;//' ~/.zsh_history | awk -F' ' '{print $1}' | grep -v '^[[:space:]]*$' | grep -v '^[[:punct:]]*$')
+
+	# Command counter
+	for command in $commands; do
+	    ((counter[$command]++))
+	done
+
+	# Sort and show commands by quantity
+	echo -e "\n🔁 Most used commands in zsh_history:\n"
+
+	for command in "${!counter[@]}"; do
+		number=${counter[$command]}
+
+		if [[ number -gt 5 ]]
+		then
+	    		echo "$command: $number" >> most_words.txt
+	    	fi
+	done
+
+	sort -h -t' ' -k2 most_words.txt | tail -n50
+	rm -f most_words.txt
 }
 
-
-
 showAutomatic(){
-
 	current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
 	if [[ "$current_shell" == "zsh" ]];
@@ -70,19 +81,17 @@ showAutomatic(){
 	else
 		echo -e "Unknown shell. Try using the manual mode "
 	fi
-
 }
 
 
 # Get option history
-
-echo -e "Hi $USER! ¿From where the script gonna get the history of your commands?"
-
+echo -e "Welcome $USER to the Smart Alias program.
+Choose how you want to load your command history:	"
 
 echo -e "
-1. Automatic
+1. Automatic (auto-detect your shell)
 2. From ~/.bash_history
-3. From ~/.zsh_history (only for zsh users)
+3. From ~/.zsh_history (Zsh users only)
 
 'q' or 'Q' to Quit
 "
@@ -90,19 +99,22 @@ echo -e "
 echo -n "Enter option : "
 read option
 
-
 case $option in
 	1)
+	 sleep 1s
 	 showAutomatic
 	;;
 	2)
+	 sleep 1s
 	 showBashHistory
 	;;
 	3)
+	 sleep 1s
 	 showZshHistory
 	;;
 	"q" | "Q")
 	 echo -e "Exiting..."
+	 sleep 1s
 	 exit 0
 	;;
 	*)
@@ -110,4 +122,3 @@ case $option in
 	 exit 0
 	;;
 esac
-
