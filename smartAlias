@@ -12,7 +12,7 @@ current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
 # Get the history for new possible alias
 
-showBashHistory(){
+useBashHistory(){
 	declare -A counter
 
 	# Extract last 2000 commands and save only the first word (the principal command)
@@ -40,7 +40,7 @@ showBashHistory(){
 }
 
 
-showZshHistory(){
+useZshHistory(){
 	declare -A counter
 
 	# Extact last used commands from ~/.zsh_history and save only the first word
@@ -67,17 +67,17 @@ showZshHistory(){
 	rm -f most_words.txt
 }
 
-showAutomatic(){
+autoDetect(){
 	current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
 	if [[ "$current_shell" == "zsh" ]];
 	then
 		echo -e "Using $current_shell history file..."
-		showZshHistory
+		useZshHistory
 	elif [[ "$current_shell" == "bash" ]]; 
 	then
 		echo -e "Using $current_shell history file..."
-		showBashHistory
+		useBashHistory
 	else
 		echo -e "Unknown shell. Try using the manual mode "
 	fi
@@ -102,15 +102,15 @@ read option
 case $option in
 	1)
 	 sleep 1s
-	 showAutomatic
+	 autoDetect
 	;;
 	2)
 	 sleep 1s
-	 showBashHistory
+	 useBashHistory
 	;;
 	3)
 	 sleep 1s
-	 showZshHistory
+	 useZshHistory
 	;;
 	"q" | "Q")
 	 echo -e "Exiting..."
