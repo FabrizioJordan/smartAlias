@@ -1,14 +1,28 @@
 #!/bin/bash
 
-BLACK='\033[0;30m'
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-ORANGE='\033[0;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-WHITE='\033[0;37m'
-NC='\033[0m' # no color
+black='\033[0;30m'
+red='\033[0;31m'
+green='\033[0;32m'
+orange='\033[0;33m'
+blue='\033[0;34m'
+magenta='\033[0;35m'
+light_magenta='\033[0;95m'
+cyan='\033[0;36m'
+white='\033[0;37m'
+nc='\033[0m' # no color
+
+normal='\033[0m' # normal
+bold='\033[1m'
+dim='\033[2m'
+italic='\033[3m'
+underline='\033[4m'
+bold_italic="${bold}${italic}"
+
+bold_green='\033[1;32m'
+bold_blue='\033[1;34m'
+italic_blue='\033[3;34m'
+under_blue='\033[4;34m'
+
 
 current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
@@ -26,14 +40,14 @@ useBashHistory(){
 	done
 
 	# Sort and show commands by quantity
-	echo -e "\n🔁 ${MAGENTA}Most frequent commands (last 2000 Bash history entries):\n${NC}"
+	echo -e "\n🔁 ${magenta}Most frequent commands (last 2000 Bash history entries):\n${nc}"
 
 	for command in "${!counter[@]}"; do
 		number=${counter[$command]}
 
 		if [[ number -gt 5 ]]
 		then
-	    		echo -e "${MAGENTA}$command: $number ${NC}" >> most_words.txt
+	    		echo -e "${magenta}$command: $number ${nc}" >> most_words.txt
 	    	fi
 	done
 
@@ -54,14 +68,14 @@ useZshHistory(){
 	done
 
 	# Sort and show commands by quantity
-	echo -e "\n🔁 ${ORANGE}Most used commands in zsh_history:\n${NC}"
+	echo -e "\n🔁 ${orange}Most used commands in zsh_history:\n${nc}"
 
 	for command in "${!counter[@]}"; do
 		number=${counter[$command]}
 
 		if [[ number -gt 5 ]]
 		then
-	    		echo -e "${ORANGE}$command: $number${NC}" >> most_words.txt
+	    		echo -e "${orange}$command: $number${nc}" >> most_words.txt
 	    	fi
 	done
 
@@ -74,32 +88,33 @@ autoDetect(){
 
 	if [[ "$current_shell" == "zsh" ]];
 	then
-		echo -e "${WHITE}Using $current_shell history file...${NC}"
+		echo -e "${white}Using $current_shell history file...${nc}"
 		useZshHistory
-	elif [[ "$current_shell" == "bash" ]]; 
+	elif [[ "$current_shell" == "bash" ]];
 	then
-		echo -e "${WHITE}Using $current_shell history file...${NC}"
+		echo -e "${white}Using $current_shell history file...${nc}"
 		useBashHistory
 	else
-		echo -e "${WHITE}Unknown shell. Try using the manual mode${NC}."
+		echo -e "${white}Unknown shell. Try using the manual mode${nc}."
 	fi
 }
 
 
 # Get option history
-echo -e "${BLUE}Welcome ${GREEN}$USER${BLUE} to the Smart Alias program.
-Choose how you want to load your command history${NC}:	"
+echo -e "${green}Welcome ${bold_blue}${USER}${green} to the Smart Alias script${white}.
+${white}Choose how you want to load your command history: ${nc}"
 
 echo -e "
-${BLUE}1${NC}. ${WHITE}Automatic (auto-detect your shell)${NC}
-${BLUE}2${NC}. ${WHITE}From ~/.bash_history${NC}
-${BLUE}3${NC}. ${WHITE}From ~/.zsh_history (Zsh users only)${NC}
+${italic_blue}1${white}. ${under_blue}Automatic ${white}(auto-detect your shell)${nc}
+${italic_blue}2${white}. ${white}From ${under_blue}~/.bash_history${nc}
+${italic_blue}3${white}. ${white}From ${under_blue}~/.zsh_history${white} (Zsh users only)${nc}
 
-${BLUE}'q'${NC} or ${BLUE}'Q'${NC} to ${BLUE}Quit${NC}
+${blue}'${italic_blue}q${BLUE}'${white} or ${blue}'${italic_blue}Q${BLUE}'${white} to ${under_blue}Quit${nc}
 "
 
-echo -ne "${WHITE}Enter option${NC} : "
+echo -ne "${white}Enter option : ${light_magenta}"
 read option
+echo -e "${white}"
 
 case $option in
 	1)
@@ -115,12 +130,12 @@ case $option in
 	 useZshHistory
 	;;
 	"q" | "Q")
-	 echo -e "${WHITE}Exiting...${NC}"
+	 echo -e "${white}Exiting...${nc}"
 	 sleep 1s
 	 exit 0
 	;;
 	*)
-	 echo -e "${RED}Error, option not recognized${NC}"
+	 echo -e "${red}Error, option not recognized${nc}"
 	 exit 0
 	;;
 esac
