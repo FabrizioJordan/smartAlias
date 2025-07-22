@@ -26,9 +26,50 @@ under_blue='\033[4;34m'
 
 current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
+
+print_help(){
+	echo -e "${bold_blue}Smart Alias ${nc}- ${bold_green}Help${nc}\n"
+
+	echo -e "A script to see your most used commands (using shells history files..)\n"
+
+    	echo -e "\e[4m\e[1mHow this script works?\e[0m\n"
+
+	echo -e "  Its easy.\n"
+
+	echo -e "  First, execute the script with ./smartScript or bash smartScript.\n"
+
+	echo -e "  Then, select your best option.\n"
+
+	echo -e "  Now, you are free to create your new aliases."
+}
+
+
+update_func(){
+	echo -e "${green}⏰ The Update starts at: ${blue}$(date +"%H:%M:%S")${nc}\n"
+
+	echo -e "\e[1mUpdating...\n\e[0m"
+
+	sleep 1
+
+	if ! command -v git &> /dev/null; then
+	    echo -e "${red}git is not installed. Please install it first to update the script${nc}"
+	    exit 1
+	fi
+
+	cd ..
+	rm -rf smartAlias
+	git clone https://github.com/FabrizioJordan/smartAlias.git
+	cd smartAlias
+	cd ..
+
+	# Show End of update
+	echo -e "\n${green}✅ The Update ends at: ${blue}$(date +"%H:%M:%S")${nc}"
+}
+
+
 # Get the history for new possible alias
 
-useBashHistory(){
+use_bash_history(){
 	declare -A counter
 
 	# Extract last 2000 commands and save only the first word (the principal command)
@@ -56,7 +97,7 @@ useBashHistory(){
 }
 
 
-useZshHistory(){
+use_zsh_history(){
 	declare -A counter
 
 	# Extact last used commands from ~/.zsh_history and save only the first word
@@ -83,59 +124,78 @@ useZshHistory(){
 	rm -f most_words.txt
 }
 
-autoDetect(){
+auto_detect(){
 	current_shell=$(ps -p $(ps -p $$ -o ppid=) -o comm=)
 
 	if [[ "$current_shell" == "zsh" ]];
 	then
 		echo -e "${white}Using $current_shell history file...${nc}"
-		useZshHistory
+		use_zsh_history
 	elif [[ "$current_shell" == "bash" ]];
 	then
 		echo -e "${white}Using $current_shell history file...${nc}"
-		useBashHistory
+		use_bash_history
 	else
 		echo -e "${white}Unknown shell. Try using the manual mode${nc}."
 	fi
 }
 
+get_option_history(){
+	# Get option history
 
-# Get option history
-echo -e "${green}Welcome ${bold_blue}${USER}${green} to the Smart Alias script${white}.
-${white}Choose how you want to load your command history: ${nc}"
+	echo -e "${green}Welcome ${bold_blue}${USER}${green} to the Smart Alias script${white}.
+	${white}Choose how you want to load your command history: ${nc}"
 
-echo -e "
-${italic_blue}1${white}. ${under_blue}Automatic ${white}(auto-detect your shell)${nc}
-${italic_blue}2${white}. ${white}From ${under_blue}~/.bash_history${nc}
-${italic_blue}3${white}. ${white}From ${under_blue}~/.zsh_history${white} (Zsh users only)${nc}
+	echo -e "
+	${italic_blue}1${white}. ${under_blue}Automatic ${white}(auto-detect your shell)${nc}
+	${italic_blue}2${white}. ${white}From ${under_blue}~/.bash_history${nc}
+	${italic_blue}3${white}. ${white}From ${under_blue}~/.zsh_history${white} (Zsh users only)${nc}
 
-${blue}'${italic_blue}q${BLUE}'${white} or ${blue}'${italic_blue}Q${BLUE}'${white} to ${under_blue}Quit${nc}
-"
+	${blue}'${italic_blue}q${BLUE}'${white} or ${blue}'${italic_blue}Q${BLUE}'${white} to ${under_blue}Quit${nc}
+	"
 
-echo -ne "${white}Enter option : ${light_magenta}"
-read option
-echo -e "${white}"
+	echo -ne "${white}Enter option : ${light_magenta}"
+	read option
+	echo -e "${white}"
 
-case $option in
-	1)
-	 sleep 1s
-	 autoDetect
+	case $option in
+		1)
+		 sleep 1s
+		 auto_detect
+		;;
+		2)
+		 sleep 1s
+		 use_bash_history
+		;;
+		3)
+		 sleep 1s
+		 use_zsh_history
+		;;
+		"q" | "Q")
+		 echo -e "${white}Exiting...${nc}"
+		 sleep 1s
+		 exit 0
+		;;
+		*)
+		 echo -e "${red}Error, option not recognized${nc}"
+		 exit 0
+		;;
+	esac
+}
+
+
+
+case "$1" in
+	-h | --help)
+		print_help
+		exit 0
 	;;
-	2)
-	 sleep 1s
-	 useBashHistory
-	;;
-	3)
-	 sleep 1s
-	 useZshHistory
-	;;
-	"q" | "Q")
-	 echo -e "${white}Exiting...${nc}"
-	 sleep 1s
-	 exit 0
-	;;
-	*)
-	 echo -e "${red}Error, option not recognized${nc}"
-	 exit 0
+	-u | --update)
+		update_func
+		exit 0
 	;;
 esac
+
+if [[ $# -lt 1 ]]; then
+	get_option_history
+fi
